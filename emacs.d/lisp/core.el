@@ -25,3 +25,5 @@
 (add-hook 'emacs-startup-hook (lambda () (setq gc-cons-threshold (* 2 1000 1000))))
 
 (set-face-attribute 'default nil :font "SauceCodePro NF ExtraLight" :height 140)
+
+(provide 'core)
