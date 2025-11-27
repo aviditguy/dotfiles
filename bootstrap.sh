@@ -30,8 +30,8 @@ echo "Using DOTFILES_DIR = $DOTFILES_DIR"
 
 ### Emacs
 # dotfiles/emacs -> ~/.config/emacs
-if [ -d "$DOTFILES_DIR/emacs" ]; then
-    link_dir "$DOTFILES_DIR/emacs" "$HOME/.config/emacs"
+if [ -d "$DOTFILES_DIR/emacs.d" ]; then
+    link_dir "$DOTFILES_DIR/emacs.d" "$HOME/.emacs.d"
 fi
 
 ### Neovim
