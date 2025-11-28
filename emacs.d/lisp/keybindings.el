@@ -8,5 +8,8 @@
 (global-set-key (kbd "C-c od") #'my/open-dotfiles)
 (global-set-key (kbd "C-c or") #'my/reload-config)
 
+
+(global-set-key (kbd "M-<up>") #'my/move-line-up)
+
 (provide 'keybindings)
 ;;; keybindings.el ends here

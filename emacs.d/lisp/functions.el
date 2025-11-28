@@ -17,6 +17,12 @@
   (load-file user-init-file)
   (message "Config reloaded!"))
 
+(defun my/move-line-up ()
+  "Move current line up."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2))
+
 
 (provide 'functions)
 ;;; functions.el ends here
