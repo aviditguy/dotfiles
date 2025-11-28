@@ -20,8 +20,10 @@
 (defun my/move-line-up ()
   "Move current line up."
   (interactive)
-  (transpose-lines 1)
-  (forward-line -2))
+  (if (bobp)
+      (message "Already at the top")
+    (transpose-lines 1)
+    (forward-line -2)))
 
 
 (provide 'functions)
