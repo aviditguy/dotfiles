@@ -31,6 +31,7 @@
                             (?\{ . ?\})  ; curly braces
                             (?\" . ?\")  ; double quotes
                             (?\' . ?\'))) ; single quotes
+(electric-pair-mode 1)
 
 ;; Handle temporary files
 (setq auto-save-default nil)   ;; Disable auto-saving

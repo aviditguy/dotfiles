@@ -65,6 +65,7 @@ If no region, move just the current line."
 
 
 (defun my/move-bie-of-line ()
+  "jump to beginning --> indentation --> end of line"
   (interactive)
   (let ((beg-pos (line-beginning-position))
 	(end-pos (line-end-position))
@@ -80,6 +81,27 @@ If no region, move just the current line."
       (back-to-indentation))
      (t
       (move-end-of-line 1)))))
+
+
+(defun my/goto-line (arg)
+  "Goto Line Absolute or Relative
+- N     -> move N lines down (relative)
+- -N    -> move N lines up (relative)
+- @N    -> go to absolute line N"
+  (interactive (list (read-string "Goto Line (@N, N, -N): ")))
+  (let ((str (string-trim arg)))
+    (cond
+     ;; Relative: N or -N
+     ((string-match-p "\\`[-]?[0-9]+\\'" str)
+      (forward-line (string-to-number str)))
+
+     ;; Absolute: @N
+     ((string-match-p "\\`@[0-9]+\\'" str)
+      (goto-char (point-min))
+      (forward-line  (1- (string-to-number (substring str 1)))))
+     (t
+      (user-error "Invalid input: %s (use @N, N or -N)" arg)))))
+
 
 
 
