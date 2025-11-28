@@ -11,5 +11,7 @@
 
 (global-set-key (kbd "M-<up>") #'my/move-line-up)
 
+(global-set-key (kbd "C-a") #'my/move-bie-of-line)
+
 (provide 'keybindings)
 ;;; keybindings.el ends here
