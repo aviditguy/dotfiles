@@ -4,4 +4,5 @@
 (require 'core)
 (require 'packages)
 (require 'theme)
+(require 'functions)
 (require 'keybindings)
