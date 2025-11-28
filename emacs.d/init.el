@@ -3,3 +3,5 @@
 
 (require 'core)
 (require 'packages)
+(require 'theme)
+(require 'keybindings)

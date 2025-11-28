@@ -45,3 +45,4 @@
 (set-face-attribute 'default nil :font "SauceCodePro NF ExtraLight" :height 140)
 
 (provide 'core)
+;;; core.el ends here
