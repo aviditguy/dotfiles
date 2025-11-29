@@ -103,7 +103,34 @@ If no region, move just the current line."
       (user-error "Invalid input: %s (use @N, N or -N)" arg)))))
 
 
+(defun my/python-use-project-venv ()
+  "If a .venv directory exists in a parent, use its Python for this buffer."
+  (let* ((root (locate-dominating-file default-directory ".venv"))
+         (venv (when root (expand-file-name ".venv" root)))
+         (python-bin (when venv (expand-file-name "bin/python" venv))))
+    (when (and python-bin (file-exists-p python-bin))
+      ;; Foer python-mode's `run-python`
+      (setq-local python-shell-interpreter python-bin)
+      ;; Optional: also adjust PATH/exec-path so black/ruff inside .venv are used
+      (make-local-variable 'exec-path)
+      (add-to-list 'exec-path (expand-file-name "bin" venv))
+      (setenv "PATH"
+              (concat (expand-file-name "bin" venv) ":" (getenv "PATH"))))))
+(add-hook 'python-mode-hook #'my/python-use-project-venv)
 
+
+(defun format-current-buffer ()
+  "Format current buffer with clang-format (for C/C++) or black (for Python)."
+  (interactive)
+  (when buffer-file-name
+    (save-buffer) ;; save before formatting
+    (cond
+     ((derived-mode-p 'c-mode 'c++-mode)
+      (shell-command (format "clang-format -i %s" (shell-quote-argument buffer-file-name))))
+     ((derived-mode-p 'python-mode)
+      (shell-command (format "black %s" (shell-quote-argument buffer-file-name)))))
+    (revert-buffer t t t))) ;; reload buffer after formatting
+(global-set-key (kbd "C-c f") 'format-current-buffer)
 
 (provide 'functions)
 ;;; functions.el ends here
