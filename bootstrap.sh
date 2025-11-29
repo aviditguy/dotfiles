@@ -46,6 +46,12 @@ if [ -d "$DOTFILES_DIR/i3" ]; then
     link_dir "$DOTFILES_DIR/i3" "$HOME/.config/i3"
 fi
 
+### alacritty
+# dotfiles/alacritty -> ~/.config/alacritty
+if [ -d "$DOTFILES_DIR/alacritty" ]; then
+    link_dir "$DOTFILES_DIR/alacritty" "$HOME/.config/alacritty"
+fi
+
 ### mpv
 # dotfiles/mpv -> ~/.config/mpv
 if [ -d "$DOTFILES_DIR/mpv" ]; then
