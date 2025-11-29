@@ -46,5 +46,11 @@ if [ -d "$DOTFILES_DIR/i3" ]; then
     link_dir "$DOTFILES_DIR/i3" "$HOME/.config/i3"
 fi
 
+### mpv
+# dotfiles/mpv -> ~/.config/mpv
+if [ -d "$DOTFILES_DIR/mpv" ]; then
+    link_dir "$DOTFILES_DIR/mpv" "$HOME/.config/mpv/"
+fi
+
 echo "All done!"
 
