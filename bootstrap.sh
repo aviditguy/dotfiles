@@ -49,7 +49,7 @@ fi
 ### mpv
 # dotfiles/mpv -> ~/.config/mpv
 if [ -d "$DOTFILES_DIR/mpv" ]; then
-    link_dir "$DOTFILES_DIR/mpv" "$HOME/.config/mpv/"
+    link_dir "$DOTFILES_DIR/mpv" "$HOME/.config/mpv"
 fi
 
 echo "All done!"
