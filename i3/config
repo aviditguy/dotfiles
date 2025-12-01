@@ -12,9 +12,9 @@ exec --no-startup-id xrandr --output eDP --scale 1.1x1.1
 # set wallpaper
 exec_always --no-startup-id feh --randomize --bg-max ~/Media/Wallpapers/Images
 # change wallpaper
-bindsym $mod+w exec --no-startup-id ./scripts/image_wallpaper.sh
+bindsym $mod+w exec --no-startup-id ~/.config/scripts/image_wallpaper.sh
 # video wallpaper
-bindsym $mod+Shift+w exec --no-startup-id ./scripts/video_wallpaper.sh
+bindsym $mod+Shift+w exec --no-startup-id ~/.config/scripts/video_wallpaper.sh
 
 for_window [class=".*"] border pixel 2
 gaps inner 5
