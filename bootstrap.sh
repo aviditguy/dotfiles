@@ -37,7 +37,7 @@ fi
 ### Tmux
 # dotfiles/tmux -> ~/.config/tmux
 if [ -f "$DOTFILES_DIR/tmux/tmux.conf" ]; then
-    ln -sf "$DOTFILES_DIR/tmux/tmux.conf" "$HOME/tmux.conf"
+    ln -sf "$DOTFILES_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
 fi
 
 ### Emacs
