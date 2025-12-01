@@ -1,0 +1,125 @@
+# i3 config file
+
+# set mod key to Windows key
+set $mod Mod4
+
+exec --no-startup-id picom
+exec --no-startup-id xset b off
+
+# Scale down
+exec --no-startup-id xrandr --output eDP --scale 1.1x1.1
+
+# set wallpaper
+exec_always --no-startup-id feh --randomize --bg-max ~/Media/Wallpapers/Images
+# change wallpaper
+bindsym $mod+w exec --no-startup-id ~/.config/i3/image_wallpaper.sh
+# video wallpaper
+bindsym $mod+Shift+w exec --no-startup-id ~/.config/i3/video_wallpaper.sh
+
+for_window [class=".*"] border pixel 2
+gaps inner 5
+focus_follows_mouse no
+client.focused #4c7899 #285577 #ffffff #2e9ef4
+
+# switch between tiled and floating windows
+bindsym $mod+Tab focus mode_toggle
+
+# make mpv like picture-in-picture mode of browser
+for_window [class="mpv"] \
+  floating enable, \
+  sticky enable, \
+  border pixel 0, \
+  move position center, \
+  resize set 1000 700
+
+# set i3status
+bar {
+   status_command i3status
+   position top
+   # mode hide
+   font pango:monospace 11
+}
+
+# close window
+bindsym $mod+q kill
+
+# fullscreen window
+bindsym $mod+f fullscreen toggle
+
+# toggle floating window
+bindsym $mod+space floating toggle
+
+# Brightness down (F5)
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+# Brightness up (F6)
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+
+# Volume down (F2)
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
+# Volume up (F3)
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
+
+
+bindsym $mod+Return exec alacritty
+bindsym $mod+d exec dmenu_run
+bindsym $mod+b exec brave
+bindsym $mod+e exec thunar
+
+# split layout hozizontal
+bindsym $mod+o split h
+# split layout vertical
+bindsym $mod+v split v
+
+# Switch focus between containers
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Move containers
+bindsym $mod+Left move left
+bindsym $mod+Down move down
+bindsym $mod+Up move up
+bindsym $mod+Right move right
+
+# enter resize mode
+bindsym $mod+r mode "resize"
+
+mode "resize" {
+   # Resize floating windows with arrow keys
+   bindsym Up resize shrink height 2 px or 2 ppt
+   bindsym Down resize grow height 2 px or 2 ppt
+   bindsym Left resize shrink width 2 px or 2 ppt
+   bindsym Right resize grow width 2 px or 2 ppt
+
+   # Exit resize mode
+   bindsym Escape mode "default"
+   bindsym Return mode "default"
+}
+
+# Change focus to workspace
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+
+# move focused window to different workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+
+# Reload, Restart and exit i3
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exit
