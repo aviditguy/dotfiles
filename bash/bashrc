@@ -1,0 +1,23 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias vim='nvim'
+alias yt-vid='yt-dlp -f "bestvideo[height<=720]+bestaudio/best[height<=720]" --cookies-from-browser brave'
+alias yt-aud='yt-dlp -x --audio-format mp3'
+alias gl='gallery-dl --cookies-from-browser brave'
+alias wget_website='wget --mirror --convert-links --adjust-extension --page-requisites --no-parent'
+alias serve='python3 -m http.server'
+alias record='ffmpeg -video_size 2112x1188 -framerate 30 -f x11grab -i :0.0 output.mp4'
+alias cliplog='~/.config/scripts/cliplog.sh'
+
+PS1='[\u@\h \W]\$ '
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
