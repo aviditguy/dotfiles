@@ -31,6 +31,11 @@
                             (?\{ . ?\})  ; curly braces
                             (?\" . ?\")  ; double quotes
                             (?\' . ?\'))) ; single quotes
+
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (setq-local electric-pair-pairs '((?\( . ?\))
+					      (?\" . ?\")))))
 (electric-pair-mode 1)
 
 ;; Handle temporary files
