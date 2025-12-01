@@ -64,5 +64,14 @@ if [ -d "$DOTFILES_DIR/mpv" ]; then
     link_dir "$DOTFILES_DIR/mpv" "$HOME/.config/mpv"
 fi
 
+### scripts
+# dotfiles/scripts -> ~/.config/scripts
+if [ -d "$DOTFILES_DIR/scripts" ]; then
+    link_dir "$DOTFILES_DIR/scripts" "$HOME/.config/scripts"
+
+    chmod +x "$DOTFILES_DIR"/scripts/*.sh 2>/dev/null || true
+    chmod +x "$HOME"/.config/scripts/*.sh 2>/dev/null || true
+fi
+
 echo "All done!"
 
