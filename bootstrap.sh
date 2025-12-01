@@ -34,6 +34,12 @@ if [ -f "$DOTFILES_DIR/bash/bashrc" ]; then
     ln -sf "$DOTFILES_DIR/bash/bashrc" "$HOME/.bashrc"
 fi
 
+### Tmux
+# dotfiles/tmux -> ~/.config/tmux
+if [ -f "$DOTFILES_DIR/tmux/tmux.conf" ]; then
+    ln -sf "$DOTFILES_DIR/tmux/tmux.conf" "$HOME/tmux.conf"
+fi
+
 ### Emacs
 # dotfiles/emacs -> ~/.config/emacs
 if [ -d "$DOTFILES_DIR/emacs.d" ]; then
