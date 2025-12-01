@@ -1,0 +1,43 @@
+general {
+   colors = true
+   interval = 5
+}
+
+order += "disk /"
+order += "cpu_temperature 0"
+order += "cpu_usage"
+order += "load"
+order += "memory"
+order += "wireless _first_"
+order += "battery 0"
+order += "tztime local"
+
+disk "/" {
+   format = "Disk: %avail"
+}
+
+cpu_usage {
+   format = "CPU: %usage"
+}
+
+load {
+   format = "Load: %1min"
+}
+
+memory {
+   format = "Memory: %used / %total"
+}
+
+wireless _first_ {
+   format_up = "W: Up"
+   format_down = "W: Down"
+}
+
+battery 0 {
+   format = "Battery: %status %percentage %remaining"
+   path = "/sys/class/power_supply/BAT0/uevent"
+}
+
+tztime local {
+   format = "Time: %d-%m-%Y %H:%M:%S"
+}
