@@ -28,6 +28,12 @@ link_dir() {
 
 echo "Using DOTFILES_DIR = $DOTFILES_DIR"
 
+### bashrc
+# dotfiles/bash/bashrc -> ~/.bashrc
+if [ -f "$DOTFILES_DIR/bash/bashrc" ]; then
+    ln -sf "$DOTFILES_DIR/bash/bashrc" "$HOME/.bashrc"
+fi
+
 ### Emacs
 # dotfiles/emacs -> ~/.config/emacs
 if [ -d "$DOTFILES_DIR/emacs.d" ]; then
