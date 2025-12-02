@@ -15,6 +15,8 @@
 
 (global-set-key (kbd "M-g M-g") #'my/goto-line)
 
+(global-set-key (kbd "M-w") #'my/copy-line-region)
+
 ;; ─────────────────────────────────────────────
 ;; Terminal Keybindings
 ;; ─────────────────────────────────────────────
