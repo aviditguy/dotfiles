@@ -8,22 +8,17 @@
     (cond
      ;; Case 1: terminal window is visible and selected → close it
      ((and win (eq win (selected-window)))
-      (message "First")
       (delete-window win))
 
      ;; Case 2: terminal window is visible but not selected → jump to it
-     (win
-      (message "Second")
-      (select-window win))
+     (win (select-window win))
 
      ;; Case 3: buffer exists but no window → create a bottom split and show it
      (buffer
-      (message "Third")
       (let ((new-win (split-window (selected-window) -15 'below)))
 	(select-window new-win)
 	(switch-to-buffer buffer)))
      (t
-      (message "Fourth")
       (let ((new-win (split-window (selected-window) -15 'below)))
 	(select-window new-win)
 	(ansi-term (getenv "SHELL")))))))
