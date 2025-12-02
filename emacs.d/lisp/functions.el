@@ -160,5 +160,12 @@ If no region, move just the current line."
 (global-set-key (kbd "C-c C-t") #'my/run-code-block)
 
 
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq python-shell-interpreter "ipython"
+                  python-shell-interpreter-args "-i --simple-prompt")))
+
+
+
 (provide 'functions)
 ;;; functions.el ends here
