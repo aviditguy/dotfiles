@@ -132,5 +132,33 @@ If no region, move just the current line."
     (revert-buffer t t t))) ;; reload buffer after formatting
 (global-set-key (kbd "C-c f") 'format-current-buffer)
 
+
+
+
+(setq my/programming-modes
+      '((c-mode     . "gcc %s -o %s && %s")
+	(c-ts-mode  . "gcc %s -o %s && %s")))
+
+(defun my/get-compile-command ()
+  (cdr (assoc major-mode my/programming-modes)))
+
+(defun my/run-code-block ()
+  (interactive)
+  (let* ((file (buffer-file-name))
+	 (base (file-name-sans-extension file))
+	 (cmd  (my/get-compile-command)))
+    (if (and file cmd)
+	(progn
+	  (my/toggle-terminal)
+	  (let ((term-buf (get-buffer "*ansi-term*")))
+	    (when term-buf
+	      (with-current-buffer term-buf
+		(term-send-raw-string
+		 (concat (format cmd file base base) "\n"))))))
+      (message "No command defined for %s" major-mode))))
+
+(global-set-key (kbd "C-c C-t") #'my/run-code-block)
+
+
 (provide 'functions)
 ;;; functions.el ends here
