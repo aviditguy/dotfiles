@@ -13,7 +13,9 @@
 
 (global-set-key (kbd "C-a") #'my/move-bie-of-line)
 
-(global-set-key (kbd "M-g g") #'my/goto-line)
+(global-set-key (kbd "M-gg") #'my/goto-line)
+
+(global-set-key (kbd "C-`") #'my/toggle-terminal)
 
 (provide 'keybindings)
 ;;; keybindings.el ends here
