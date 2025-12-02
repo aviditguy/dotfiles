@@ -15,8 +15,11 @@
 
 (global-set-key (kbd "M-g M-g") #'my/goto-line)
 
+;; ─────────────────────────────────────────────
+;; Terminal Keybindings
+;; ─────────────────────────────────────────────
 (global-set-key (kbd "C-`") #'my/toggle-terminal)
-
+(global-set-key (kbd "C-c C-`") #'my/toggle-terminal-move)
 
 ;; ─────────────────────────────────────────────
 ;; Window resizing with C-x + C-arrow keys
