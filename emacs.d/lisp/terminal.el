@@ -15,7 +15,10 @@
 
      ;; Case 3: buffer exists but no window → create a bottom split and show it
      (buffer
-      (let ((new-win (split-window (selected-window) -15 'below)))
+      (let ((new-win
+	     (if my/terminal-position-below-p
+		 (split-window (selected-window) -15 'below)
+	       (split-window (selected-window) -70 'right))))
 	(select-window new-win)
 	(switch-to-buffer buffer)))
      (t
