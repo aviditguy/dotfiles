@@ -13,7 +13,7 @@
 
 (global-set-key (kbd "C-a") #'my/move-bie-of-line)
 
-(global-set-key (kbd "M-gg") #'my/goto-line)
+(global-set-key (kbd "M-g M-g") #'my/goto-line)
 
 (global-set-key (kbd "C-`") #'my/toggle-terminal)
 
