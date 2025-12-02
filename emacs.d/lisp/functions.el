@@ -165,6 +165,16 @@ If no region, move just the current line."
             (setq python-shell-interpreter "ipython"
                   python-shell-interpreter-args "-i --simple-prompt")))
 
+(with-eval-after-load 'python
+  (define-key python-mode-map (kbd "C-x C-e")
+    (lambda ()
+      (interactive)
+      (python-shell-send-region
+       (save-excursion
+         (python-nav-beginning-of-statement)
+         (point))
+       (point)))))
+
 
 
 (provide 'functions)
