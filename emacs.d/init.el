@@ -6,6 +6,7 @@
 (require 'org-config)
 (require 'theme)
 (require 'functions)
+(require 'terminal)
 (require 'keybindings)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

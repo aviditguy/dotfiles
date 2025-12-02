@@ -134,6 +134,7 @@ If no region, move just the current line."
 
 
 
+(defvar my/terminal-position-below-p t)
 
 (defun my/toggle-terminal ()
   (interactive)
@@ -162,6 +163,25 @@ If no region, move just the current line."
       (let ((new-win (split-window (selected-window) -15 'below)))
 	(select-window new-win)
 	(ansi-term (getenv "SHELL")))))))
+
+
+(defun my/toggle-terminal-move ()
+  (interactive)
+  (let* ((buffer-name "*ansi-term*")
+	(buffer      (get-buffer buffer-name))
+	(win         (and buffer (get-buffer-window buffer))))
+    (when buffer
+      (setq my/terminal-position-below-p (not my/terminal-position-below-p))
+
+      (when win
+	(delete-window win))
+
+      (let ((new-win
+	     (if my/terminal-position-below-p
+		 (split-window (selected-window) -15 'below)
+	       (split-window (selected-window) -70 'right))))
+	(select-window new-win)
+	(switch-to-buffer buffer)))))
 
 
 (provide 'functions)
