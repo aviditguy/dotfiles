@@ -26,11 +26,8 @@
 ;; ─────────────────────────────────────────────
 (global-set-key (kbd "C-x C-<up>")    (lambda () (interactive) (enlarge-window 2)))
 (global-set-key (kbd "C-x C-<down>")  (lambda () (interactive) (shrink-window 2)))
-
 (global-set-key (kbd "C-x C-<left>")  (lambda () (interactive) (shrink-window-horizontally 2)))
 (global-set-key (kbd "C-x C-<right>") (lambda () (interactive) (enlarge-window-horizontally 2)))
-
-
 
 (provide 'keybindings)
 ;;; keybindings.el ends here
