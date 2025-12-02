@@ -175,7 +175,13 @@ If no region, move just the current line."
          (point))
        (point)))))
 
-
+(defun my/copy-line-region (beg end)
+  (interactive "r")
+  (let ((deactivate-mark nil))
+    (if (use-region-p)
+	(kill-ring-save beg end)
+      (kill-ring-save (line-beginning-position)
+		      (line-end-position)))))
 
 (provide 'functions)
 ;;; functions.el ends here
