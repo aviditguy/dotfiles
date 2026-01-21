@@ -12,33 +12,6 @@
 (use-package doom-themes)
 (load-theme 'doom-material-dark t)
 
-(use-package company
-  :hook (after-init . global-company-mode)
-  :config
-  (setq company-minimum-prefix-length 1
-        company-idle-delay 0.0)
-  (add-to-list 'company-backends 'company-capf))
-
-(use-package eglot
-  :ensure t
-  :hook ((python-mode . eglot-ensure)
-	 (c-mode      . eglot-ensure)
-	 (c++-mode    . eglot-ensure))
-  :config
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
-  (add-to-list 'eglot-server-programs '(c-mode      . ("clangd")))
-  (add-to-list 'eglot-server-programs '(c++-mode    . ("clangd")))
-  ;; Handy keybindings
-  (define-key eglot-mode-map (kbd "C-c r") #'eglot-rename)
-  (define-key eglot-mode-map (kbd "C-c a") #'eglot-code-actions))
-
-;; Eldoc-box: automatic hover docs
-(use-package eldoc-box
-  :ensure t
-  :after eglot
-  :config
-  (define-key eglot-mode-map (kbd "C-c h") #'eldoc-box-help-at-point))
-
 
 
 
@@ -58,26 +31,12 @@
 (ido-everywhere 1)
 (show-paren-mode 1)
 (save-place-mode 1)          ;; Remember cursor positions in files
-;;(desktop-save-mode 1)        ;; Remembers buffers, window layout, etc
 (global-auto-revert-mode 1)  ;; if file changes on disk reload its buffer
 
 ;; Never let point get closer than 10 lines to top/bottom of window
 (setq scroll-margin 10)
 (setq scroll-conservatively 101)   ;; smooth scrolling, no recentering
 (setq scroll-step 1)               ;; scroll by 1 line when needed
-
-;; electric pair
-(setq electric-pair-pairs '((?\( . ?\))  ; parentheses
-                            (?\[ . ?\])  ; square brackets
-                            (?\{ . ?\})  ; curly braces
-                            (?\" . ?\")  ; double quotes
-                            (?\' . ?\'))) ; single quotes
-
-(add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (setq-local electric-pair-pairs '((?\( . ?\))
-					      (?\" . ?\")))))
-(electric-pair-mode 1)
 
 ;; Handle temporary files
 (setq auto-save-default nil)   ;; Disable auto-saving
@@ -139,18 +98,10 @@
  '(org-level-7 ((t (:inherit default :height 1.1))))
  '(org-level-8 ((t (:inherit default :height 1.1)))))
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (shell      . t)
-   (C          . t)
-   (js         . nodejs)
-   (python     . t)))
-
 (require 'org-tempo)
 (setq org-structure-template-alist
-      '(("C"      . "src C")
-        ("cpp"    . "src C++")
+      '(("c"      . "src c")
+        ("cpp"    . "src cpp")
         ("py"     . "src python")
         ("sh"     . "src shell")
 	("script" . "src shell-script")
@@ -175,235 +126,161 @@
 
 
 
-(defun my/python-use-project-venv ()
-  "If a .venv directory exists in a parent, use its Python for this buffer."
-  (let* ((root (locate-dominating-file default-directory ".venv"))
-         (venv (when root (expand-file-name ".venv" root)))
-         (python-bin (when venv (expand-file-name "bin/python" venv))))
-    (when (and python-bin (file-exists-p python-bin))
-      ;; Foer python-mode's `run-python`
-      (setq-local python-shell-interpreter python-bin)
-      ;; Optional: also adjust PATH/exec-path so black/ruff inside .venv are used
-      (make-local-variable 'exec-path)
-      (add-to-list 'exec-path (expand-file-name "bin" venv))
-      (setenv "PATH"
-              (concat (expand-file-name "bin" venv) ":" (getenv "PATH"))))))
-(add-hook 'python-mode-hook #'my/python-use-project-venv)
 
 
+(defvar my/config
+  '(:term-below t
+		:c-cmd "gcc %f -o /tmp/a.out -lm && /tmp/a.out"))
 
 
-
-
-
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-;; Formatter
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-(setq my/lang-formatters
-      '((c-mode          . "clang-format -i %f")
-	(c++-mode        . "clang-format -i %f")
-	(python-mode     . "black %f")
-	(org-mode        . org)))
-
-(defun my/format-region-with-temp-file (formatter)
-  (let* ((tmp (make-temp-file "orgfmt" nil ".tmp"))
-	 (content (buffer-string)))
-    (unwind-protect
-	(progn
-	  ;; Write src buffer content
-	  (with-temp-file tmp
-	    (insert content))
-
-	  ;; run formatter
-	  (shell-command
-	   (replace-regexp-in-string
-	    "%f"
-	    (shell-quote-argument tmp)
-	    formatter))
-
-	  ;; replace buffer with formatted content
-	  (erase-buffer)
-	  (insert-file-contents tmp))
-      (delete-file tmp))))
-
-(defun my/apply-formatter (formatter)
+(defun my/helper--get-lang-extension (lang)
   (cond
-   ;; Org src edit buffer → region/temp file
-   ((and (stringp formatter)
-	 (org-src-edit-buffer-p))
-    (my/format-region-with-temp-file formatter))
-
-   ;; Normal file buffer
-   ((stringp formatter)
-    (when buffer-file-name
-      (save-buffer)
-      (let ((cmd (replace-regexp-in-string
-		  "%f"
-		  (shell-quote-argument buffer-file-name)
-		  formatter)))
-	(shell-command cmd)
-	(revert-buffer t t t))))
-
-   ;; Org
-   ((eq formatter 'org)
-    (org-indent-indent-buffer))))
+   ((string= lang "c")      ".c")
+   ((string= lang "cpp")    ".cpp")
+   ((string= lang "python") ".py")
+   ((string= lang "lisp")   ".lisp")
+   (t                       ".txt")))
 
 
-(defun my/format-buffer ()
+(defun my/helper--create-file (path lang content)
+  (let* ((ext  (my/helper--get-lang-extension lang))
+	 (file (if path path (make-temp-file "my-" nil ext))))
+    (when (and path (file-name-directory path))
+      (make-directory (file-name-directory path) t))
+    (with-temp-file file (insert content))
+    file))
+
+
+(defun my/helper--build-lang-cmd (file lang libs)
+  (let ((cmd (plist-get my/config
+			(intern (format ":%s-cmd" lang)))))
+    (when cmd
+      (let ((cmd1 (replace-regexp-in-string "%f" file cmd t t)))
+	(if libs
+	    (replace-regexp-in-string "&&" (concat " " libs " &&") cmd1 t t)
+	  cmd1)))))
+
+(defun my/helper--org-src-block-p ()
+  (if (and (derived-mode-p 'org-mode)
+	   (eq (org-element-type (org-element-context)) 'src-block))
+      (org-element-context)
+    nil))
+
+(defun my/helper--extract-org-src-block ()
+  (when-let* ((el      (my/helper--org-src-block-p))
+	      (headers (org-babel-parse-header-arguments
+			(org-element-property :parameters el))))
+    (list
+     :lang    (org-element-property :language el)
+     :path    (alist-get :path headers)
+     :keep    (alist-get :keep headers)
+     :libs    (alist-get :libs headers)
+     :run     (alist-get :run headers)
+     :single  (alist-get :single headers)
+     :body    (org-element-property :value el))))
+
+(defun my/helper--collect-org-src (body lang single)
+  (save-excursion
+    (let* ((blocks (list body))
+	   (done   nil))
+      (while (and (not done) (not single))
+	(condition-case nil
+	    (progn
+	      (org-babel-previous-src-block)
+	      (let ((data my/helper--extract-org-src-block))
+		(when (and (eq nil (plist-get :run data))
+			   (string= lang (plist-get :lang data)))
+		  (push (plist-get :body data) blocks))))
+	  (error
+	   (setf done t))))
+      (mapconcat #'identity blocks "\n"))))
+
+
+;; TERMINAL HELPER
+
+
+(defun my/helper--create-terminal ()
+  "Create ansi-term in background if not exists"
+  (let ((term-name "*my-terminal*"))
+    (unless (buffer-live-p (get-buffer term-name))
+      (save-window-excursion
+	(let ((buf (ansi-term (getenv "SHELL"))))
+	  (with-current-buffer buf
+	    (rename-buffer term-name)))))))
+
+(defun my/helper--terminal-visible-p ()
+  (let ((win (get-buffer-window "*my-terminal*")))
+    (and win (window-live-p win))))
+
+(defun my/helper--show-terminal (&optional switch)
+  (my/helper--create-terminal)
+
+  (unless (my/helper--terminal-visible-p)
+    (let ((win
+	   (if (plist-get my/config :term-below)
+	       (split-window nil -15 'below)
+	     (split-window nil -100 'right))))
+      (set-window-buffer win (get-buffer "*my-terminal*"))
+      
+      (when switch (select-window win)))))
+
+(defun my/helper--hide-terminal ()
+  (if (my/helper--terminal-visible-p)
+      (delete-window
+       (get-buffer-window "*my-terminal*"))))
+
+
+
+
+
+
+(defun my/send-raw-string-terminal (command)
+  "Send COMMAND to ansi-term BUFFER-NAME."
+  (my/helper--show-terminal)
+  (with-current-buffer (get-buffer "*my-terminal*")
+    (goto-char (point-max))
+    (term-send-raw-string (concat command "\n"))))
+
+(defun my/toggle-terminal ()
   (interactive)
-  (let* ((formatter (assoc major-mode my/lang-formatters)))
-    (if (not formatter)
-	(message "No formatters for %s" mode)
-      (my/apply-formatter (cdr formatter)))))
+  (if (my/helper--terminal-visible-p)
+      (my/helper--hide-terminal)
+    (my/helper--show-terminal t)))
 
-(global-set-key (kbd "C-c f") #'my/format-buffer)
-
-
-
-
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-;; Terminal
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-;; :win     → terminal created hai ya nahi (existence flag)
-;; :active  → terminal visible hai ya background me
-;; :below   → split direction (t = bottom, nil = right)
-(setq my/term-state '(:win nil :active nil :below t))
-
-a
-efun my/term-create ()
-  "Create ansi-term in background and update my/term-state."
+(defun my/move-terminal ()
   (interactive)
-  (unless (plist-get my/term-state :win)
-    (save-window-excursion
-      (ansi-term (getenv "SHELL")))
-    ;; update state
-    (setq my/term-state (plist-put my/term-state :win t))))
+  (setf my/config (plist-put my/config :term-below
+			     (not (plist-get my/config :term-below))))
+  
+  (when (my/helper--terminal-visible-p)
+    (my/helper--hide-terminal))
+  (my/helper--show-terminal t))
 
-
-(defun my/term-show ()
-  (interactive)
-  (unless (plist-get my/term-state :win)
-    (my/term-create))
-
-  ;; only show if not already active
-  (unless (plist-get my/term-state :active)
-    (let ((win (split-window (selected-window)
-			     (if (plist-get my/term-state :below) -15 -100)
-			     (if (plist-get my/term-state :below) 'below 'right))))
-      (set-window-buffer win (get-buffer "*ansi-term*"))
-      (select-window win)
-      (setq my/term-state (plist-put my/term-state :active t)))))
-
-(defun my/term-hide ()
-  (interactive)
-  (if (plist-get my/term-state :active)
-      (progn
-	(when-let ((win (get-buffer-window (get-buffer "*ansi-term*"))))
-	  (delete-window win))
-	(setq my/term-state (plist-put my/term-state :active nil)))))
-
-(defun my/term-buffer-killed-hook ()
-  "Reset my/term-state if *ansi-term* buffer is killed."
-  (when (and (boundp 'my/term-state)
-             (string= (buffer-name) "*ansi-term*"))
-    (setq my/term-state '(:win nil :active nil :below t))))
-
-(add-hook 'kill-buffer-hook #'my/term-buffer-killed-hook)
-
-(defun my/term-send (cmd)
-  (interactive)
-  (my/term-show)
-  (let* ((buf  (get-buffer "*ansi-term*"))
-	 (proc (and buf (get-buffer-process buf))))
-    (unless proc
-      (error "No running ansi-term process"))
-    (process-send-string proc (concat cmd "\n"))))
-
-(defun my/term-toggle ()
-  (interactive)
-
-  (if (plist-get my/term-state :active)
-      (my/term-hide)
-    (my/term-show)))
-
-(defun my/term-toggle-move ()
-  (interactive)
-
-  (setq my/term-state
-	(plist-put my/term-state :below
-		   (not (plist-get my/term-state :below))))
-  (if (plist-get my/term-state :active)
-      (progn
-	(my/term-hide)
-	(my/term-show))
-    (my/term-show)))
-
-(global-set-key (kbd "C-`") #'my/term-toggle)
-(global-set-key (kbd "C-M-`") #'my/term-toggle-move)
-
-
-
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-;; Run Org Code Blocks in Terminal
-;; ────────────────────────────────────────────────────────────────────────────────────────────────────
-
-(defun my/create-file (file content)
-  (interactive)
-  (let ((dir (file-name-directory file)))
-    (when dir
-      (make-directory dir t))
-    (write-region content nil file)))
-
-
-(defun my/string-to-plist (s)
-  (when s
-    (let* ((tokens (split-string s "[ \t\n]+" t))
-	   (plist '()))
-      (while tokens
-	(let ((key (intern (pop tokens)))
-	      (val (pop tokens)))
-	  (setq plist (plist-put plist key val))))
-      plist)))
-
-
-(defun my/extract-src-block ()
-  (interactive)
-  (let ((element (org-element-context)))
-    (unless (eq (org-element-type element) 'src-block)
-      (error "Point is not inside an Org src block"))
-
-    (let* ((lang    (org-element-property :language element))
-	   (headers (org-element-property :parameters element))
-	   (hplist  (my/string-to-plist headers))
-	   (body    (org-element-property :value element))
-	   (result  (list :lang lang :headers hplist :body body)))
-      (message "%s" result)
-      result)))
 
 (defun my/run-org-src-block ()
   (interactive)
-  (let* ((data    (my/extract-src-block))
-	 (lang    (plist-get data :lang))
-	 (headers (plist-get data :headers))
-	 (path    (expand-file-name (plist-get headers :path)))
-	 (body    (plist-get data :body)))
-   
-    (cond
-     ((string= lang "shell")
-      (my/term-send body))
-     
-     ((string= lang "makefile")
-      (unless path
-	(error "makefile requires :path"))
-      (my/create-file path body)
-      (my/term-send (format "make -f %s; rm -f %s" path path)))
-
-     (t
-      (message "Source (%s) written to %s lang path")))))
+  (when-let ((data (my/helper--extract-org-src-block)))
+    (let* ((lang    (plist-get data :lang))
+	   (path    (plist-get data :path))
+	   (single  (plist-get data :single))
+	   (libs    (plist-get data :libs))	   
+	   (body    (plist-get data :body))
+	   (content (my/helper--collect-org-src body lang single))
+	   (file    (my/helper--create-file path lang content))
+	   (cmd     (my/helper--build-lang-cmd file lang libs)))
+      (message "%s" cmd)
+      (unless cmd
+	(error "No command for language %s" lang))
+      (my/send-raw-string-terminal cmd))))
 
 
+
+
+(global-set-key (kbd "C-`") #'my/toggle-terminal)
+(global-set-key (kbd "C-M-`") #'my/move-terminal)
 
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-<return>")
 	      #'my/run-org-src-block))
 
+		 
