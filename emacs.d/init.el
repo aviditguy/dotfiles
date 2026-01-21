@@ -48,7 +48,7 @@
 (add-hook 'emacs-startup-hook (lambda () (setq gc-cons-threshold (* 2 1000 1000))))
 
 ;; Set Font
-(set-face-attribute 'default nil :font "Iosevka ExtraLight Extended" :height 115)
+(set-face-attribute 'default nil :font "Monospace" :height 120)
 
 
 
@@ -126,91 +126,62 @@
 
 
 
-
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+;; CONFIG
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 (defvar my/config
-  '(:term-below t
-		:c-cmd "gcc %f -o /tmp/a.out -lm && /tmp/a.out"))
+  '(:term-name "*my-terminal*"
+	       :term-below t
+	       :c-cmd "gcc %f -o /tmp/a.out -lm && /tmp/a.out"
+	       :python-cmd "python3 %f"
+	       :lisp-cmd "sbcl --script %f"
+	       :c-fmt "clang-format -i %f"
+	       :python-fmt "black %f"))
 
 
 (defun my/helper--get-lang-extension (lang)
   (cond
    ((string= lang "c")      ".c")
-   ((string= lang "cpp")    ".cpp")
    ((string= lang "python") ".py")
-   ((string= lang "lisp")   ".lisp")
    (t                       ".txt")))
 
 
+(defun my/helper--build-lang-command (file lang libs)
+  (let ((cmd (plist-get my/config
+			(intern (format ":%s-cmd" lang)))))
+    (when cmd
+      (let ((cmd1 (replace-regexp-in-string "%f" file cmd t t)))
+	(if libs
+	    (replace-regexp-in-string "&&" (concat libs " &&") cmd1 t t)
+	  cmd1)))))
+
+
 (defun my/helper--create-file (path lang content)
-  (let* ((ext  (my/helper--get-lang-extension lang))
+  (let* ((ext (my/helper--get-lang-extension lang))
 	 (file (if path path (make-temp-file "my-" nil ext))))
     (when (and path (file-name-directory path))
       (make-directory (file-name-directory path) t))
     (with-temp-file file (insert content))
     file))
 
-
-(defun my/helper--build-lang-cmd (file lang libs)
-  (let ((cmd (plist-get my/config
-			(intern (format ":%s-cmd" lang)))))
-    (when cmd
-      (let ((cmd1 (replace-regexp-in-string "%f" file cmd t t)))
-	(if libs
-	    (replace-regexp-in-string "&&" (concat " " libs " &&") cmd1 t t)
-	  cmd1)))))
-
-(defun my/helper--org-src-block-p ()
-  (if (and (derived-mode-p 'org-mode)
-	   (eq (org-element-type (org-element-context)) 'src-block))
-      (org-element-context)
-    nil))
-
-(defun my/helper--extract-org-src-block ()
-  (when-let* ((el      (my/helper--org-src-block-p))
-	      (headers (org-babel-parse-header-arguments
-			(org-element-property :parameters el))))
-    (list
-     :lang    (org-element-property :language el)
-     :path    (alist-get :path headers)
-     :keep    (alist-get :keep headers)
-     :libs    (alist-get :libs headers)
-     :run     (alist-get :run headers)
-     :single  (alist-get :single headers)
-     :body    (org-element-property :value el))))
-
-(defun my/helper--collect-org-src (body lang single)
-  (save-excursion
-    (let* ((blocks (list body))
-	   (done   nil))
-      (while (and (not done) (not single))
-	(condition-case nil
-	    (progn
-	      (org-babel-previous-src-block)
-	      (let ((data my/helper--extract-org-src-block))
-		(when (and (eq nil (plist-get :run data))
-			   (string= lang (plist-get :lang data)))
-		  (push (plist-get :body data) blocks))))
-	  (error
-	   (setf done t))))
-      (mapconcat #'identity blocks "\n"))))
-
-
-;; TERMINAL HELPER
-
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+;; TERMINAL TOGGLE SYSTEM
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 (defun my/helper--create-terminal ()
-  "Create ansi-term in background if not exists"
-  (let ((term-name "*my-terminal*"))
+  (let ((term-name (plist-get my/config :term-name)))
     (unless (buffer-live-p (get-buffer term-name))
       (save-window-excursion
 	(let ((buf (ansi-term (getenv "SHELL"))))
 	  (with-current-buffer buf
 	    (rename-buffer term-name)))))))
 
+
 (defun my/helper--terminal-visible-p ()
-  (let ((win (get-buffer-window "*my-terminal*")))
+  (let ((win (get-buffer-window (plist-get my/config :term-name) t)))
     (and win (window-live-p win))))
+
 
 (defun my/helper--show-terminal (&optional switch)
   (my/helper--create-terminal)
@@ -220,26 +191,23 @@
 	   (if (plist-get my/config :term-below)
 	       (split-window nil -15 'below)
 	     (split-window nil -100 'right))))
-      (set-window-buffer win (get-buffer "*my-terminal*"))
-      
+      (set-window-buffer win (get-buffer (plist-get my/config :term-name)))
       (when switch (select-window win)))))
+
 
 (defun my/helper--hide-terminal ()
   (if (my/helper--terminal-visible-p)
       (delete-window
-       (get-buffer-window "*my-terminal*"))))
+       (get-buffer-window (plist-get my/config :term-name)))))
 
 
-
-
-
-
-(defun my/send-raw-string-terminal (command)
-  "Send COMMAND to ansi-term BUFFER-NAME."
+(defun my/send-raw-string-terminal (cmd)
+  (interactive)
   (my/helper--show-terminal)
-  (with-current-buffer (get-buffer "*my-terminal*")
+  (with-current-buffer (get-buffer (plist-get my/config :term-name))
     (goto-char (point-max))
-    (term-send-raw-string (concat command "\n"))))
+    (term-send-raw-string (concat cmd "\n"))))
+
 
 (defun my/toggle-terminal ()
   (interactive)
@@ -247,34 +215,78 @@
       (my/helper--hide-terminal)
     (my/helper--show-terminal t)))
 
+
 (defun my/move-terminal ()
   (interactive)
   (setf my/config (plist-put my/config :term-below
 			     (not (plist-get my/config :term-below))))
-  
   (when (my/helper--terminal-visible-p)
     (my/helper--hide-terminal))
   (my/helper--show-terminal t))
+      
+
+
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+;; RUN ORG SRC BLOCK IN TERMINAL
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+
+(defun my/helper--org-src-block-p ()
+  (when (derived-mode-p 'org-mode)
+    (let ((el (org-element-context)))
+      (when (eq (org-element-type el) 'src-block)
+	el))))
+
+
+(defun my/helper--extract-org-src-block ()
+  (when-let ((el (my/helper--org-src-block-p)))
+    (let ((header (org-babel-parse-header-arguments
+		   (org-element-property :parameters el))))
+      (list
+       :lang   (org-element-property :language el)
+       :body   (org-element-property :value el)
+       :path   (alist-get :path header)
+       :run    (alist-get :run header)
+       :single (alist-get :single header)
+       :libs   (alist-get :libs header)))))
 
 
 (defun my/run-org-src-block ()
   (interactive)
-  (when-let ((data (my/helper--extract-org-src-block)))
-    (let* ((lang    (plist-get data :lang))
-	   (path    (plist-get data :path))
-	   (single  (plist-get data :single))
-	   (libs    (plist-get data :libs))	   
-	   (body    (plist-get data :body))
-	   (content (my/helper--collect-org-src body lang single))
-	   (file    (my/helper--create-file path lang content))
-	   (cmd     (my/helper--build-lang-cmd file lang libs)))
-      (message "%s" cmd)
-      (unless cmd
-	(error "No command for language %s" lang))
-      (my/send-raw-string-terminal cmd))))
+  (when-let* ((data (my/helper--extract-org-src-block))
+	      (run  (plist-get data :run)))
+    
+    (let ((lang    (plist-get data :lang))
+	  (path    (plist-get data :path))
+	  (single  (plist-get data :single))
+	  (libs    (plist-get data :libs))
+	  (content (plist-get data :body))
+	  (done    nil))
+
+      (save-excursion
+	(while (and (not done) (not single))
+	  (condition-case nil
+	      (progn
+		(org-babel-previous-src-block)
+		(let ((data (my/helper--extract-org-src-block)))
+		  (when (and (eq nil (plist-get data :run))
+			     (string= lang (plist-get data :lang)))
+		    (setf content (concat (plist-get data :body) "\n" content)))))
+	    (error
+	     (setf done t)))))
+
+      (let* ((file (my/helper--create-file path lang content))
+	     (cmd  (my/helper--build-lang-command file lang libs)))
+
+	(unless cmd
+	  (error "No command for language %s" lang))
+
+	(my/send-raw-string-terminal cmd)))))
 
 
 
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+;; KEYBINDINGS
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 (global-set-key (kbd "C-`") #'my/toggle-terminal)
 (global-set-key (kbd "C-M-`") #'my/move-terminal)
@@ -283,4 +295,3 @@
   (define-key org-mode-map (kbd "C-<return>")
 	      #'my/run-org-src-block))
 
-		 
