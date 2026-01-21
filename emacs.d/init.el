@@ -165,6 +165,59 @@
     (with-temp-file file (insert content))
     file))
 
+
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+;; FORMATTING
+;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+
+(defun my/format-buffer ()
+  (interactive)
+  (let ((spec (cond
+	       ;; Org; no external formatter
+	       ((derived-mode-p 'org-mode) 'org)
+
+	       ;; C / C++
+	       ((derived-mode-p 'c-mode 'c++-mode)
+		(cons "clang-format" nil))
+		    
+	       ; Python
+	       ((derived-mode-p 'python-mode)
+		(cons "black" '("-" "--quiet")))
+
+	       ;; JS / TS / HTML / CSS
+	       ((derived-mode-p 'js-mode 'js-ts-mode 'typescript-mode 'html-mode 'css-mode)
+		(let ((ext (cond
+			    ((derived-mode-p 'typescript-mode) "ts")
+			    ((derived-mode-p 'html-mode) "html")
+			    ((derived-mode-p 'css-mode) "css")
+			    (t "js"))))
+		  (cons "prettier"
+			(list "--stdin-filepath" (concat "dummy." ext)))))
+	       
+	       (t nil))))
+
+    (cond
+     ;; Org special case
+     ((eq spec 'org)
+      (org-indent-indent-buffer))
+
+     ;; External formatters
+     (spec
+      (let ((program    (car spec))
+	    (args       (cdr spec))
+	    (orig-point (point)))
+	(apply #'call-process-region
+	       (point-min) (point-max)
+	       program
+	       t t nil
+	       args)
+	(goto-char orig-point)))
+
+     (t
+      (message "No formatter for this mode")))))
+   
+
+
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 ;; TERMINAL TOGGLE SYSTEM
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -225,7 +278,6 @@
   (my/helper--show-terminal t))
       
 
-
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 ;; RUN ORG SRC BLOCK IN TERMINAL
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -283,10 +335,11 @@
 	(my/send-raw-string-terminal cmd)))))
 
 
-
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
 ;; KEYBINDINGS
 ;; ────────────────────────────────────────────────────────────────────────────────────────────────────
+
+(global-set-key (kbd "C-c f") #'my/format-buffer)
 
 (global-set-key (kbd "C-`") #'my/toggle-terminal)
 (global-set-key (kbd "C-M-`") #'my/move-terminal)
