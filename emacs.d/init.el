@@ -48,7 +48,7 @@
 (add-hook 'emacs-startup-hook (lambda () (setq gc-cons-threshold (* 2 1000 1000))))
 
 ;; Set Font
-(set-face-attribute 'default nil :font "Monospace" :height 120)
+(set-face-attribute 'default nil :font "Iosevka ExtraLight Extended" :height 120)
 
 
 
@@ -116,9 +116,12 @@
   (add-to-list 'org-file-apps '("\\.jpeg\\'" . "feh %s"))
   (add-to-list 'org-file-apps '("\\.gif\\'" . "feh %s"))
   (add-to-list 'org-file-apps '("\\.webp\\'" . "feh %s"))
-  (add-to-list 'org-file-apps '("\\.svg\\'" . "feh %s")))
+  (add-to-list 'org-file-apps '("\\.svg\\'" . "feh %s"))
+  (add-to-list 'org-file-apps '("\\.mp4\\'" . "mpv %s")))
 
 
+(setq org-startup-with-inline-images t)
+(setq org-image-actual-width 1000)
 
 
 
