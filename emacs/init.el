@@ -156,7 +156,7 @@
 
     (set-face-attribute face nil
                         :weight 'bold
-                        :height 1.2))
+                        :height 1.1))
 
   ;; Images
   (add-to-list 'org-file-apps '("\\.png\\'"  . "feh %s"))
