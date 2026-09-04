@@ -222,5 +222,5 @@
 
 
 (require 'terminal)
-(require 'carousel)
-(require 'org-todo)
+(require 'org_carousel)
+(require 'org_todo)

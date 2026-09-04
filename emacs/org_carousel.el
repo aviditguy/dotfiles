@@ -92,4 +92,4 @@
 (define-key org-mode-map (kbd "C-M-n") #'my-carousel-next)
 (define-key org-mode-map (kbd "C-M-p") #'my-carousel-previous)
 
-(provide 'carousel)
+(provide 'org_carousel)

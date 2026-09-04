@@ -49,4 +49,4 @@
 	      #'my-org-todo-toggle))
 
 
-(provide 'org-todo)
+(provide 'org_todo)
