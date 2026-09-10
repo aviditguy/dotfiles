@@ -212,7 +212,7 @@
 
 
 ;; ============================================================
-;; TERMINAL SYSTEM
+;; VTERM SETUP
 ;; ============================================================
 
 (use-package vterm)
@@ -297,3 +297,134 @@
     (goto-char (point-max))
     (vterm-send-string command t)
     (vterm-send-return)))
+
+
+
+
+;; ============================================================
+;; ORG CAROUSEL
+;; ============================================================
+
+(defvar my--carousel-overlay nil)
+(defvar my--carousel-images  nil)
+(defvar my--carousel-index   0)
+
+
+(defun my-org-src-get (key)
+  (and (derived-mode-p 'org-mode)
+       (let ((el (org-element-context)))
+	 (when (eq (org-element-type el) 'src-block)
+	   (org-element-property key el)))))
+
+
+(defun my-carousel-src-p ()
+  (string=
+   (my-org-src-get :language)
+   "carousel"))
+
+
+(defun my-carousel-set-image ()
+  (when (overlayp my--carousel-overlay)
+    
+    (let* ((img-path (nth my--carousel-index my--carousel-images))
+	   (img-name (file-name-nondirectory (expand-file-name img-path)))
+	   (total    (length my--carousel-images))
+	   (count    (1+ my--carousel-index)))
+
+      (overlay-put
+       my--carousel-overlay
+       'display
+       (create-image img-path nil nil :width 400))
+
+      (overlay-put
+       my--carousel-overlay
+       'after-string
+       (format "\n%s  (%d/%d)\n\n" img-name count total)))))
+
+
+(defun my-carousel-create ()
+  (interactive)
+  
+  (when (my-carousel-src-p)
+
+    (my-carousel-remove)
+
+    (let ((beg  (my-org-src-get :begin))
+	  (end  (my-org-src-get :end)))
+
+      (setf my--carousel-images
+	    (split-string
+	     (my-org-src-get :value)
+	     "\n" t))
+
+      (setf my--carousel-index 0)
+
+      (setf my--carousel-overlay
+	    (make-overlay beg end))
+
+      (my-carousel-set-image))))
+
+
+(defun my-carousel-remove ()
+  (interactive)
+
+  (when (overlayp my--carousel-overlay)
+    (delete-overlay my--carousel-overlay)
+    (setf my--carousel-overlay nil)))
+
+
+(defun my-carousel-next ()
+  (interactive)
+
+  (when (and (overlayp my--carousel-overlay)
+	     (my-carousel-src-p))
+    (setf my--carousel-index
+	  (mod
+	   (1+ my--carousel-index)
+	   (length my--carousel-images)))
+
+    (my-carousel-set-image)))
+
+;; (define-key org-mode-map (kbd "<right>") #'my-carousel-next)
+
+(defun my-carousel-previous ()
+  (interactive)
+
+  (when (overlayp my--carousel-overlay)
+    (setf my--carousel-index
+          (mod
+           (1- my--carousel-index)
+           (length my--carousel-images)))
+
+    (my-carousel-set-image)))
+
+
+(defun my-carousel-toggle ()
+  (interactive)
+  (if (overlayp my--carousel-overlay)
+      (my-carousel-remove)
+    (my-carousel-create)))
+
+(defvar my--carousel-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-<return>") #'my-carousel-toggle)
+    (define-key map (kbd "<right>")     #'my-carousel-next)
+    (define-key map (kbd "<left>")      #'my-carousel-previous)
+    map))
+
+(define-minor-mode my-carousel-mode
+  "Keymap for navigating carousel blocks."
+  :lighter nil
+  :keymap my--carousel-mode-map)
+
+(defun my-carousel-activate-map ()
+  (my-carousel-mode
+   (if (my-carousel-src-p) 1 -1)))
+
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (add-hook 'post-command-hook
+                      #'my-carousel-activate-map
+                      nil
+                      t)))
