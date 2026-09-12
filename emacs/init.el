@@ -544,9 +544,9 @@ int main(void)
 %s
 }")
 
+(defvar my--org-src-directory "/tmp/org-src/")
+
 (defun my-eval-buffer (&optional path)
-  (interactive)
-  
   (let* ((inp   (expand-file-name
 		 (or path (buffer-file-name))))
 	 (out   (file-name-sans-extension inp))
@@ -570,8 +570,6 @@ int main(void)
 
 
 (defun my-org-eval-src ()
-  (interactive)
-  
   (when (org-in-src-block-p)
     
     (let* ((path  (my-org-src-key :file))
@@ -597,3 +595,28 @@ int main(void)
 
       (my-eval-buffer file))))
 
+
+(defun my-eval-src (&optional path)
+  (interactive)
+  
+  (if (and (derived-mode-p 'org-mode)
+	   (org-in-src-block-p))
+      (my-org-eval-src)
+    (my-eval-buffer path)))
+
+
+(with-eval-after-load 'cc-mode
+  (mapc
+   (lambda (mode)
+     (define-key
+      (symbol-value mode)
+      (kbd "C-c C-c")
+      (lambda ()
+	(interactive)
+	(my-eval-src))))
+   '(c-mode-map c++-mode-map)))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map
+	      (kbd "C-c C-c")
+	      #'my-eval-src))
