@@ -482,3 +482,118 @@
   (define-key org-mode-map
 	      (kbd "S-<right>")
 	      #'my-org-todo-toggle))
+
+
+
+;; ============================================================
+;; HELPER FUNCTIONS
+;; ============================================================
+
+(defun my-org-src-key (key)
+  (when (org-in-src-block-p)
+    
+    (let* ((el   (org-element-context))
+	   (res  (org-element-property key el))
+	   (args (org-babel-parse-header-arguments
+		  (org-element-property :parameters el))))
+
+      (or res
+	  (cdr (assoc key args))))))
+
+
+(defun my-extract-c-flags (file)
+  (let ((ext (file-name-extension file)))
+
+    (when (member ext '("c" "cpp"))
+      (with-temp-buffer
+	(insert-file-contents file nil 0 300)
+	(goto-char (point-min))
+
+	(when (looking-at "^//[ \t]*\\(.*\\)$")
+	  (match-string 1))))))
+
+
+(defun my-org-src-extension ()
+  (let ((lang (my-org-src-key :language)))
+    (cond
+     ((string= lang "c")   ".c")
+     ((string= lang "cpp") ".cpp")
+     ((string= lang "py")  ".py")
+     ((string= lang "js")  ".js"))))
+
+
+(defun my-org-src-file-name ()
+  (when (org-in-src-block-p)
+    (concat my--org-src-directory
+	    (file-name-sans-extension (buffer-name))
+	    (my-org-src-extension))))
+
+
+;; ============================================================
+;; CORE
+;; ============================================================
+
+(defvar my--c-template
+  "#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
+int main(void)
+{
+%s
+}")
+
+(defun my-eval-buffer (&optional path)
+  (interactive)
+  
+  (let* ((inp   (expand-file-name
+		 (or path (buffer-file-name))))
+	 (out   (file-name-sans-extension inp))
+	 (ext   (file-name-extension inp))
+	 (flags (or (my-extract-c-flags inp) "")))
+
+    (cond
+     ((string= ext "c")
+      (my-vterm-send (format "gcc -o %s %s %s && %s"
+			     out inp flags out)))
+     
+     ((string= ext "cpp")
+      (my-vterm-send (format "g++ -o %s %s %s && %s"
+			     out inp flags out)))
+     
+     ((string= ext "py")
+      (my-vterm-send (format "python %s" inp)))
+    
+     ((string= ext "js")
+      (my-vterm-send (format "node %s" inp))))))
+
+
+(defun my-org-eval-src ()
+  (interactive)
+  
+  (when (org-in-src-block-p)
+    
+    (let* ((path  (my-org-src-key :file))
+	   (file  (or path (my-org-src-file-name)))
+	   (data  (my-org-src-key :value))
+	   (flags (my-org-src-key :flags))
+	   (wrap  (my-org-src-key :wrap)))
+
+      (make-directory my--org-src-directory t)
+
+      (unless path
+	(setf flags
+	      (if flags
+		  (format "// %s\n" flags)
+		""))
+
+	(setf data
+	      (if wrap
+		  (format (concat flags my--c-template) data)
+		(concat flags data)))
+	
+	(with-temp-file file (insert data)))
+
+      (my-eval-buffer file))))
+
