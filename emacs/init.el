@@ -216,6 +216,7 @@
 ;; ============================================================
 
 (load "/home/ashura/Workspace/dotfiles/emacs/terminal.el")
+(load "/home/ashura/Workspace/dotfiles/emacs/eval_buffer.el")
 
 ;; (use-package vterm)
 
@@ -572,79 +573,79 @@ int main(void)
 
 (defvar my--org-src-directory "/tmp/org-src/")
 
-(defun my-eval-buffer (&optional path)
-  (let* ((inp   (expand-file-name
-		 (or path (buffer-file-name))))
-	 (out   (file-name-sans-extension inp))
-	 (ext   (file-name-extension inp))
-	 (flags (or (my-extract-c-flags inp) "")))
+;; (defun my-eval-buffer (&optional path)
+;;   (let* ((inp   (expand-file-name
+;; 		 (or path (buffer-file-name))))
+;; 	 (out   (file-name-sans-extension inp))
+;; 	 (ext   (file-name-extension inp))
+;; 	 (flags (or (my-extract-c-flags inp) "")))
 
-    (cond
-     ((string= ext "c")
-      (my-vterm-send (format "gcc -o %s %s %s && %s"
-			     out inp flags out)))
+;;     (cond
+;;      ((string= ext "c")
+;;       (my-vterm-send (format "gcc -o %s %s %s && %s"
+;; 			     out inp flags out)))
      
-     ((string= ext "cpp")
-      (my-vterm-send (format "g++ -o %s %s %s && %s"
-			     out inp flags out)))
+;;      ((string= ext "cpp")
+;;       (my-vterm-send (format "g++ -o %s %s %s && %s"
+;; 			     out inp flags out)))
      
-     ((string= ext "py")
-      (my-vterm-send (format "python %s" inp)))
+;;      ((string= ext "py")
+;;       (my-vterm-send (format "python %s" inp)))
     
-     ((string= ext "js")
-      (my-vterm-send (format "node %s" inp))))))
+;;      ((string= ext "js")
+;;       (my-vterm-send (format "node %s" inp))))))
 
 
-(defun my-org-eval-src ()
-  (when (org-in-src-block-p)
+;; (defun my-org-eval-src ()
+;;   (when (org-in-src-block-p)
     
-    (let* ((path  (my-org-src-key :file))
-	   (file  (or path (my-org-src-file-name)))
-	   (data  (my-org-src-key :value))
-	   (flags (my-org-src-key :flags))
-	   (wrap  (my-org-src-key :wrap)))
+;;     (let* ((path  (my-org-src-key :file))
+;; 	   (file  (or path (my-org-src-file-name)))
+;; 	   (data  (my-org-src-key :value))
+;; 	   (flags (my-org-src-key :flags))
+;; 	   (wrap  (my-org-src-key :wrap)))
 
-      (make-directory my--org-src-directory t)
+;;       (make-directory my--org-src-directory t)
 
-      (unless path
-	(setf flags
-	      (if flags
-		  (format "// %s\n" flags)
-		""))
+;;       (unless path
+;; 	(setf flags
+;; 	      (if flags
+;; 		  (format "// %s\n" flags)
+;; 		""))
 
-	(setf data
-	      (if wrap
-		  (if (string= wrap "raylib")
-		      (format my--raylib-template data)
-		    (format (concat flags my--c-template) data))
-		(concat flags data)))
+;; 	(setf data
+;; 	      (if wrap
+;; 		  (if (string= wrap "raylib")
+;; 		      (format my--raylib-template data)
+;; 		    (format (concat flags my--c-template) data))
+;; 		(concat flags data)))
 	
-	(with-temp-file file (insert data)))
+;; 	(with-temp-file file (insert data)))
 
-      (my-eval-buffer file))))
+;;       (my-eval-buffer file))))
 
 
-(defun my-eval-src (&optional path)
-  (interactive)
+;; (defun my-eval-src (&optional path)
+;;   (interactive)
   
-  (if (and (derived-mode-p 'org-mode)
-	   (org-in-src-block-p))
-      (my-org-eval-src)
-    (my-eval-buffer path)))
+;;   (if (and (derived-mode-p 'org-mode)
+;; 	   (org-in-src-block-p))
+;;       (my-org-eval-src)
+;;     (my-eval-buffer path)))
 
 
-(with-eval-after-load 'cc-mode
-  (mapc
-   (lambda (mode)
-     (define-key
-      (symbol-value mode)
-      (kbd "C-c C-c")
-      (lambda ()
-	(interactive)
-	(my-eval-src))))
-   '(c-mode-map c++-mode-map)))
+;; (with-eval-after-load 'cc-mode
+;;   (mapc
+;;    (lambda (mode)
+;;      (define-key
+;;       (symbol-value mode)
+;;       (kbd "C-c C-c")
+;;       (lambda ()
+;; 	(interactive)
+;; 	(my-eval-src))))
+;;    '(c-mode-map c++-mode-map)))
 
-(with-eval-after-load 'org
-  (define-key org-mode-map
-	      (kbd "C-c C-c")
-	      #'my-eval-src))
+;; (with-eval-after-load 'org
+;;   (define-key org-mode-map
+;; 	      (kbd "C-c C-c")
+;; 	      #'my-eval-src))
