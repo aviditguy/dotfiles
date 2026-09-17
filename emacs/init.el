@@ -211,98 +211,6 @@
 
 
 
-;; ============================================================
-;; VTERM SETUP
-;; ============================================================
-
-(load "/home/ashura/Workspace/dotfiles/emacs/terminal.el")
-(load "/home/ashura/Workspace/dotfiles/emacs/eval_buffer.el")
-
-;; (use-package vterm)
-
-
-;; (defvar my--vterm-name "*vterm-default*")
-;; (defvar my--vterm-below-p t)
-;; (defvar my--vterm-height 15)
-;; (defvar my--vterm-width 80)
-
-
-;; (defun my-vterm-is-focused ()
-;;   (let ((win (get-buffer-window my--vterm-name)))
-;;     (if (eq win (selected-window))
-;; 	win
-;;       nil)))
-
-;; (defun my-vterm-update-height ()
-;;   (when my--vterm-below-p
-;;     (setf my--vterm-height
-;; 	  (window-height (get-buffer-window
-;; 			  my--vterm-name)))))
-
-;; (defun my-vterm-update-width ()
-;;   (unless my--vterm-below-p
-;;     (setf my--vterm-width
-;; 	  (window-width (get-buffer-window
-;; 			 my--vterm-name)))))
-
-
-;; (defun my-vterm-show (&optional switch)
-;;   (let ((buf (get-buffer my--vterm-name)))
-;;     (unless buf
-;;       (save-window-excursion
-;; 	(vterm my--vterm-name)))
-
-;;     (let ((win (get-buffer-window my--vterm-name)))
-;;       (unless win
-;; 	(setf win
-;; 	      (if my--vterm-below-p
-;; 		  (split-window nil (- my--vterm-height) 'below)
-;; 		(split-window nil (- my--vterm-width) 'right)))
-;; 	(set-window-buffer win my--vterm-name))
-
-;;       (when switch (select-window win)))))
-
-
-;; (defun my-vterm-hide ()
-;;   (when-let* ((win (my-vterm-is-focused)))
-;;     (my-vterm-update-height)
-;;     (my-vterm-update-width)
-;;     (delete-window win)))
-
-
-;; (defun my-vterm-toggle ()
-;;   (interactive)
-
-;;   (if (my-vterm-is-focused)
-;;       (my-vterm-hide)
-;;     (my-vterm-show t)))
-
-
-;; (defun my-vterm-move ()
-;;   (interactive)
-
-;;   (my-vterm-show t)
-;;   (my-vterm-hide)
-
-;;   (setf my--vterm-below-p
-;; 	(not my--vterm-below-p))
-
-;;   (my-vterm-show t))
-
-
-;; (global-set-key (kbd "C-`") #'my-vterm-toggle)
-;; (global-set-key (kbd "C-M-`") #'my-vterm-move)
-
-
-;; (defun my-vterm-send (command)
-;;   (my-vterm-show)
-;;   (with-current-buffer my--vterm-name
-;;     (goto-char (point-max))
-;;     (vterm-send-string command t)
-;;     (vterm-send-return)))
-
-
-
 
 ;; ============================================================
 ;; ORG CAROUSEL
@@ -492,6 +400,21 @@
 ;; HELPER FUNCTIONS
 ;; ============================================================
 
+(defun my-parse-header (key &optional file)
+  (let ((inp (or file (buffer-file-name))))
+
+    (with-temp-buffer
+      (insert-file-contents inp nil 0 300)
+      (goto-char (point-min))
+
+      (when (looking-at "^\\(?://\\|#\\)[ \t]*\\(.*\\)$")
+        (let ((params (match-string 1)))
+          (when (string-match
+                 (format "%s[ \t]+\\([^:]*\\)" key)
+                 params)
+            (string-trim (match-string 1 params))))))))
+
+
 (defun my-org-src-key (key)
   (when (org-in-src-block-p)
     
@@ -504,16 +427,28 @@
 	  (cdr (assoc key args))))))
 
 
-(defun my-extract-c-flags (file)
-  (let ((ext (file-name-extension file)))
+;; (defun my-org-src-key (key)
+;;   (when (org-in-src-block-p)
+    
+;;     (let* ((el   (org-element-context))
+;; 	   (res  (org-element-property key el))
+;; 	   (args (org-babel-parse-header-arguments
+;; 		  (org-element-property :parameters el))))
 
-    (when (member ext '("c" "cpp"))
-      (with-temp-buffer
-	(insert-file-contents file nil 0 300)
-	(goto-char (point-min))
+;;       (or res
+;; 	  (cdr (assoc key args))))))
 
-	(when (looking-at "^//[ \t]*\\(.*\\)$")
-	  (match-string 1))))))
+
+;; (defun my-extract-c-flags (file)
+;;   (let ((ext (file-name-extension file)))
+
+;;     (when (member ext '("c" "cpp"))
+;;       (with-temp-buffer
+;; 	(insert-file-contents file nil 0 300)
+;; 	(goto-char (point-min))
+
+;; 	(when (looking-at "^//[ \t]*\\(.*\\)$")
+;; 	  (match-string 1))))))
 
 
 (defun my-org-src-extension ()
@@ -522,10 +457,11 @@
      ((string= lang "c")   ".c")
      ((string= lang "cpp") ".cpp")
      ((string= lang "py")  ".py")
-     ((string= lang "js")  ".js"))))
+     ((string= lang "js")  ".js")
+     ((string= lang "emacs-lisp") ".el"))))
 
 
-(defun my-org-src-file-name ()
+(defun my-org-src-name ()
   (when (org-in-src-block-p)
     (concat my--org-src-directory
 	    (file-name-sans-extension (buffer-name))
@@ -571,7 +507,7 @@ int main(void)
 }")
 
 
-(defvar my--org-src-directory "/tmp/org-src/")
+;; (defvar my--org-src-directory "/tmp/org-src/")
 
 ;; (defun my-eval-buffer (&optional path)
 ;;   (let* ((inp   (expand-file-name
@@ -649,3 +585,122 @@ int main(void)
 ;;   (define-key org-mode-map
 ;; 	      (kbd "C-c C-c")
 ;; 	      #'my-eval-src))
+
+
+(load "/home/ashura/Workspace/dotfiles/emacs/terminal.el")
+(load "/home/ashura/Workspace/dotfiles/emacs/eval_buffer.el")
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TEMPLATES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar my--c-template
+  "// :flags -lm
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <math.h>
+#include <time.h>
+
+int main(void)
+{
+  %s
+  return 0;
+}")
+
+(defvar my--raylib-template
+  "// :flags -lraylib -lm
+#include <raylib.h>
+#include <math.h>
+
+int main(void)
+{
+    InitWindow(800, 600, \"Raylib\");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose())
+    {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+	%s
+        EndDrawing();
+    }
+
+    CloseWindow();
+}")
+
+(defvar my--canvas-template
+  "<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\"
+          content=\"width=device-width, initial-scale=1.0\">
+
+    <style>
+      *{
+	  margin: 0;
+	  padding: 0;
+	  box-sizing: border-box;
+      }
+      
+      canvas {
+	  border: 1px solid gray;
+      }
+    </style>
+
+  </head>
+  <body>
+    <canvas id=\"canvas1\"></canvas>
+
+    <script>
+      const canvas = document.getElementById(\"canvas1\");
+      const ctx    = canvas.getContext(\"2d\");
+
+      canvas.width  = 600;
+      canvas.height = 400;
+
+      function update()
+      {
+      }
+
+      function draw()
+      {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      
+      function loop()
+      {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      %s
+
+    </script>
+  </body>
+</html>")
+
+
+(defun my-template-insert (template)
+  (insert (format template "")))
+
+(defun @c-template ()
+  (interactive)
+  (my-template-insert my--c-template))
+
+(defun @raylib-template ()
+  (interactive)
+  (my-template-insert my--raylib-template))
+
+(defun @canvas-template ()
+  (interactive)
+  (my-template-insert my--canvas-template))
+
+

@@ -22,7 +22,7 @@
             (string-trim (match-string 1 params))))))))
 
 
-(defun my-eval-buffer (&optional file)
+(defun my-eval-src (&optional file)
   (interactive)
   
   (let ((inp  (or file (buffer-file-name))))
@@ -61,28 +61,69 @@
      (define-key
       (symbol-value mode)
       (kbd "C-c C-c")
-      #'my-eval-buffer))
+      #'my-eval-src))
    '(c-mode-map
      c++-mode-map)))
 
 (with-eval-after-load 'python
   (define-key python-mode-map
     (kbd "C-c C-c")
-    #'my-eval-buffer))
+    #'my-eval-src))
 
 (with-eval-after-load 'js
   (define-key js-mode-map
     (kbd "C-c C-c")
-    #'my-eval-buffer))
+    #'my-eval-src))
 
 (with-eval-after-load 'sh-script
   (define-key sh-mode-map
     (kbd "C-c C-c")
-    #'my-eval-buffer))
+    #'my-eval-src))
 
 ;; `awk-mode` keybinding not working
 (add-hook 'awk-mode-hook
           (lambda ()
             (local-set-key
              (kbd "C-c C-c")
-             #'my-eval-buffer)))
+             #'my-eval-src)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defvar my--org-src-directory "/tmp/org-src/")
+
+(defun my-org-src-extension ()
+  (let ((lang (my-org-src-key :language)))
+    (cond
+     ((string= lang "c")   ".c")
+     ((string= lang "cpp") ".cpp")
+     ((string= lang "python")  ".py")
+     ((string= lang "js")  ".js")
+     ((string= lang "shell") ".sh")
+     ((string= lang "emacs-lisp") . ".el"))))
+
+(defun my-org-src-name ()
+  (when (org-in-src-block-p)
+    (concat my--org-src-directory
+	    (file-name-sans-extension (buffer-name))
+	    (my-org-src-extension))))
+
+(defun my-org-eval-src ()
+  (interactive)
+
+  (when (org-in-src-block-p)
+    
+    (let ((inp  (my-org-src-name))
+	  (data (my-org-src-key :value)))
+
+      (make-directory my--org-src-directory t)
+
+      (with-temp-file inp (insert data))
+
+      (my-eval-src inp))))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map
+	      (kbd "C-c C-c")
+	      #'my-org-eval-src))
