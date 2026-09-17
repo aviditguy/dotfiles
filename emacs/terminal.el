@@ -1,5 +1,12 @@
 ;; -*- lexical-binding: t; -*-
 
+(provide 'terminal)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; VTERM SETUP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;; install package
 (use-package vterm)
 
@@ -95,5 +102,3 @@
     (vterm-send-string command t)
     (vterm-send-return)))
 
-
-(provide 'terminal)

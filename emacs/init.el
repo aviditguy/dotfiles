@@ -556,6 +556,7 @@
 	      (or load-file-name buffer-file-name)))
 
 (require 'templates)
+(require 'terminal)
 (require 'carousel)
 
 ;; (load "/home/ashura/Workspace/dotfiles/emacs/templates.el")
