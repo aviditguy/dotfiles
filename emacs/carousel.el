@@ -94,7 +94,9 @@
 	     (1+ my--carousel-index)
 	     (length my--carousel-images)))
 
-      (my-carousel-set-image my--carousel-index pidx))))
+      (when
+	  (not (= my--carousel-index pidx))
+	(my-carousel-set-image my--carousel-index pidx)))))
 
 
 (defun my-carousel-previous ()
@@ -110,7 +112,9 @@
 	     (1- my--carousel-index)
 	     (length my--carousel-images)))
 
-      (my-carousel-set-image my--carousel-index pidx))))
+      (when
+	  (not (= my--carousel-index pidx))
+	(my-carousel-set-image my--carousel-index pidx)))))
 
 
 
