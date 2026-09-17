@@ -1,3 +1,7 @@
+;; -*- lexical-binding: t; -*-
+
+(provide 'templates)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TEMPLATES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,5 +111,6 @@ int main(void)
 (defun @canvas-template ()
   (interactive)
   (my-template-insert my--canvas-template))
+
 
 

@@ -551,7 +551,10 @@
 ;; 	      (kbd "C-c C-c")
 ;; 	      #'my-eval-src))
 
+(add-to-list 'load-path
+	     (file-name-directory load-file-name))
 
-(load "/home/ashura/Workspace/dotfiles/emacs/templates.el")
+(require 'templates)
+;; (load "/home/ashura/Workspace/dotfiles/emacs/templates.el")
 (load "/home/ashura/Workspace/dotfiles/emacs/terminal.el")
 (load "/home/ashura/Workspace/dotfiles/emacs/eval_buffer.el")
