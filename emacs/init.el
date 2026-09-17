@@ -435,12 +435,11 @@
   
     (my-vterm-send expr)
 
-    (let ((hit-return nil))
-      (dolist (prefix '("if" "for"))
+    (catch 'break
+      (dolist (prefix '("if" "for" "while" "with" "def" "class" "async"))
 	(when (string-prefix-p prefix expr)
-	  (setq hit-return t)))
-      (when hit-return
-	(my-vterm-send "\n")))))
+	  (my-vterm-send "\n")
+	  (throw 'break nil))))))
 
 
 (defun my-eval-last-exp ()
