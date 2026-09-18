@@ -62,6 +62,7 @@
 ;; FONT
 (set-face-attribute 'default nil :font "Iosevka" :height 120)
 
+
 (use-package doom-themes)
 (load-theme 'doom-material-dark t)
 
@@ -78,6 +79,9 @@
 (require 'templates)
 (require 'terminal)
 (require 'carousel)
+(require 'timer)
+(require 'eval-last-exp)
+(require 'org-typst)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -172,12 +176,25 @@
      ((string= lang "emacs-lisp") ".el"))))
 
 
+;; (defun my-org-src-name ()
+;;   (when (org-in-src-block-p)
+;;     (concat my--org-src-directory
+;; 	    (file-name-sans-extension (buffer-name))
+;; 	    (my-org-src-extension))))
+
+
+  
 (defun my-org-src-name ()
   (when (org-in-src-block-p)
-    (concat my--org-src-directory
-	    (file-name-sans-extension (buffer-name))
-	    (my-org-src-extension))))
-
+    (let ((id (secure-hash
+	       'sha256
+	       (my-org-src-key :value))))
+      
+      (concat my--org-src-directory
+	      (file-name-sans-extension (buffer-name))
+	      "-"
+	      (substring id 0 30)
+	      (my-org-src-extension)))))
 
 ;; ============================================================
 ;; CORE
@@ -264,53 +281,3 @@
 
 ;; (load "/home/ashura/Workspace/dotfiles/emacs/eval_buffer.el")
 
-
-(defun my-mode-p (mode lang)
-  (or (derived-mode-p mode)
-      (string=
-       (my-org-src-get :language)
-       lang)))
-
-(defun my-indicate (beg end)
-  (pulse-momentary-highlight-region beg end))
-
-(defun my-eval-last-pyexp ()
-  (let ((end  (point))
-	(beg  nil)
-	(expr nil))
-    
-    (save-excursion
-      (beginning-of-line)
-
-      (while (looking-at "^ ")
-	(forward-line -1))
-
-      (setq beg (point)))
-
-    (setq expr (string-trim
-		(buffer-substring-no-properties
-		 beg end)))
-    
-    (my-indicate beg end)
-  
-    (my-vterm-send expr)
-
-    (catch 'break
-      (dolist (prefix '("if" "for" "while" "with" "def" "class" "async"))
-	(when (string-prefix-p prefix expr)
-	  (my-vterm-send "\n")
-	  (throw 'break nil))))))
-
-
-(defun my-eval-last-exp ()
-  (interactive)
-
-  (cond
-   ((my-mode-p 'python-mode "python")
-    (my-eval-last-pyexp))
-
-   (t
-    (message "Context not supported"))))
-
-
-(global-set-key (kbd "C-M-e") #'my-eval-last-exp)
