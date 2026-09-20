@@ -29,7 +29,7 @@
     (message "Context not supported"))))
 
 
-(global-set-key (kbd "C-M-e") #'my-eval-last-exp)
+;; (global-set-key (kbd "C-M-e") #'my-eval-last-exp)
 
 
 ;; ============================================================

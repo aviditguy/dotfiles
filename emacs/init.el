@@ -69,6 +69,37 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; HELPER FUNCTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun my-org-src-get (key)
+  (when (org-in-src-block-p)
+    
+    (let* ((el   (org-element-context))
+	   (res  (org-element-property key el))
+	   (args (org-babel-parse-header-arguments
+		  (org-element-property :parameters el))))
+
+      (if (eq key :end)
+	  (let ((beg (org-element-property :begin el)))
+	    (save-excursion
+	      (goto-char beg)
+	      (setf res
+		    (re-search-forward "^#\\+end_src" nil t))))
+	(or res
+	    (cdr (assoc key args)))))))
+
+
+(defun my-org-in-src-block-p (blocks)
+  (when (member (my-org-src-get :language) blocks)
+    (let ((start (point))
+	  (beg   (my-org-src-get :begin))
+	  (end   (my-org-src-get :end)))
+      (<= start end))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (add-to-list 'load-path
@@ -76,11 +107,13 @@
 	      (or load-file-name buffer-file-name)))
 
 (require 'org-config)
+(require 'keybindings)
+
 (require 'templates)
-(require 'terminal)
-(require 'carousel)
-(require 'timer)
-(require 'eval-last-exp)
+;; (require 'terminal)
+;; (require 'carousel)
+;; (require 'timer)
+;; (require 'eval-last-exp)
 (require 'org-typst)
 
 
@@ -154,16 +187,16 @@
             (string-trim (match-string 1 params))))))))
 
 
-(defun my-org-src-get (key)
-  (when (org-in-src-block-p)
+;; (defun my-org-src-get (key)
+;;   (when (org-in-src-block-p)
     
-    (let* ((el   (org-element-context))
-	   (res  (org-element-property key el))
-	   (args (org-babel-parse-header-arguments
-		  (org-element-property :parameters el))))
+;;     (let* ((el   (org-element-context))
+;; 	   (res  (org-element-property key el))
+;; 	   (args (org-babel-parse-header-arguments
+;; 		  (org-element-property :parameters el))))
 
-      (or res
-	  (cdr (assoc key args))))))
+;;       (or res
+;; 	  (cdr (assoc key args))))))
 
 
 (defun my-org-src-extension ()

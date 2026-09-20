@@ -75,7 +75,9 @@
         ("sh"     . "src shell")
 	("awk"    . "src awk")
         ("el"     . "src emacs-lisp")
-	("lisp"   . "src lisp")))
+	("lisp"   . "src lisp")
+	("typst"  . "src typst")
+	("cetz"   . "src cetz")))
 
 
 ;; ORG FACES & FILE ASSOCIATIONS

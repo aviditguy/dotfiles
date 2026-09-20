@@ -90,8 +90,8 @@
   (my-vterm-show t))
 
 
-(global-set-key (kbd "C-`") #'my-vterm-toggle)
-(global-set-key (kbd "C-M-`") #'my-vterm-move)
+;; (global-set-key (kbd "C-`") #'my-vterm-toggle)
+;; (global-set-key (kbd "C-M-`") #'my-vterm-move)
 
 
 ;; useful function to send command to terminal without switching to it
