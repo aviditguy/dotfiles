@@ -80,14 +80,20 @@
 	   (args (org-babel-parse-header-arguments
 		  (org-element-property :parameters el))))
 
-      (if (eq key :end)
-	  (let ((beg (org-element-property :begin el)))
-	    (save-excursion
-	      (goto-char beg)
-	      (setf res
-		    (re-search-forward "^#\\+end_src" nil t))))
+      (cond
+       ((eq key :value)
+	(string-trim (org-element-property :value el)))
+
+       ((eq key :end)
+	(let ((beg (org-element-property :begin el)))
+	  (save-excursion
+	    (goto-char beg)
+	    (setf res
+		  (re-search-forward "^#\\+end_src" nil t)))))
+
+       (t
 	(or res
-	    (cdr (assoc key args)))))))
+	    (cdr (assoc key args))))))))
 
 
 (defun my-org-in-src-block-p (blocks)
