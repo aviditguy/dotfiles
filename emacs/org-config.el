@@ -70,14 +70,15 @@
 
 ;; SOURCE BLOCK TEMPLATES
 (setq org-structure-template-alist
-      '(("c"      . "src c")
-        ("py"     . "src python")
-        ("sh"     . "src shell")
-	("awk"    . "src awk")
-        ("el"     . "src emacs-lisp")
-	("lisp"   . "src lisp")
-	("typst"  . "src typst")
-	("cetz"   . "src cetz")))
+      '(("c"        . "src c")
+        ("py"       . "src python")
+        ("sh"       . "src shell")
+	("awk"      . "src awk")
+        ("el"       . "src emacs-lisp")
+	("lisp"     . "src lisp")
+	("typst"    . "src typst")
+	("cetz"     . "src cetz")
+	("carousel" . "src carousel")))
 
 
 ;; ORG FACES & FILE ASSOCIATIONS
