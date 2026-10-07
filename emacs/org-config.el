@@ -111,26 +111,26 @@
 
 ;; LATEX / TIKZ PREVIEW
 ;; Set dvisvgm as the default process for LaTeX previews
-(setq org-preview-latex-default-process 'dvisvgm)
+;; (setq org-preview-latex-default-process 'dvisvgm)
 
 ;; Ensure the TikZ package is included in the preview preamble
-(add-to-list 'org-latex-packages-alist
-	     '("" "tikz" t))
+;; (add-to-list 'org-latex-packages-alist
+;; 	     '("" "tikz" t))
 
 ;; Enable the tikzpicture environment for previewing
-(eval-after-load "preview"
-  '(add-to-list
-    'preview-default-preamble
-    "\\PreviewEnvironment{tikzpicture}"
-    t))
+;; (eval-after-load "preview"
+;;   '(add-to-list
+;;     'preview-default-preamble
+;;     "\\PreviewEnvironment{tikzpicture}"
+;;     t))
 
-(setq org-format-latex-options
-      (plist-put
-       (plist-put org-format-latex-options
-                  :scale 1)
-       :latex-header
-       "\\usepackage{cancel}
-\\usepacage{multirow}"))
+;; (setq org-format-latex-options
+;;       (plist-put
+;;        (plist-put org-format-latex-options
+;;                   :scale 1)
+;;        :latex-header
+;;        "\\usepackage{cancel}
+;; \\usepacage{multirow}"))
 
 ;; (setq org-format-latex-options
 ;;       (plist-put org-format-latex-options
@@ -140,11 +140,11 @@
 ;; 		 :latex-header
 ;; 		 "\\usepackage{cancel}"))
 
-(setq org-preview-latex-image-directory
-      "~/.ltximg/")
+;; (setq org-preview-latex-image-directory
+;;       "~/.ltximg/")
 
 
 ;; IMAGES
 (setq org-image-align 'center)
-(setq org-image-actual-width 500)
+;; (setq org-image-actual-width 500)
 
